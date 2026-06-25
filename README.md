@@ -1,1 +1,503 @@
 # customer-churn-analysis-cbsot
+# 📡 Telco Customer Churn Prediction using Machine Learning
+
+An end-to-end Machine Learning project that predicts customer churn in the telecom industry using the Telco Customer Churn Dataset. The project combines Exploratory Data Analysis (EDA), Data Preprocessing, Feature Engineering, Random Forest Classification, Hyperparameter Tuning, Model Evaluation, and Customer Segmentation using K-Means Clustering.
+
+---
+
+## 🎯 Project Objective
+
+Customer churn is one of the biggest challenges faced by telecom companies. Acquiring new customers is significantly more expensive than retaining existing ones.
+
+The objective of this project is to:
+
+* Predict whether a customer is likely to churn.
+* Identify key factors influencing customer churn.
+* Improve customer retention strategies through predictive analytics.
+* Segment customers into meaningful business groups for targeted marketing and retention campaigns.
+
+---
+
+## 📊 Dataset Information
+
+**Dataset:** `Telco_customer_churn.xlsx`
+
+### Target Variable
+
+| Value | Meaning           |
+| ----- | ----------------- |
+| 1     | Customer Churned  |
+| 0     | Customer Retained |
+
+### Key Features
+
+* Tenure Months
+* Monthly Charges
+* Total Charges
+* Contract Type
+* Internet Service
+* Payment Method
+* Tech Support
+* Demographic Information
+
+---
+
+## 🛠️ Technology Stack
+
+### Programming Language
+
+* Python
+
+### Libraries Used
+
+* Pandas
+* NumPy
+* Matplotlib
+* Seaborn
+* Scikit-Learn
+* OpenPyXL
+
+### Installation
+
+```bash
+pip install pandas numpy matplotlib seaborn scikit-learn openpyxl
+```
+
+---
+
+# 🔍 Exploratory Data Analysis (EDA)
+
+Comprehensive exploratory analysis was conducted to understand customer behavior and identify churn patterns.
+
+### Analysis Performed
+
+### Customer Churn Distribution
+
+* Class imbalance analysis
+* Churned vs retained customer comparison
+
+### Tenure Analysis
+
+* Distribution plots
+* KDE visualization
+* Churn-based boxplots
+
+### Monthly Charges Analysis
+
+* Distribution analysis
+* Customer spending patterns
+
+### Contract Type Analysis
+
+* Month-to-month
+* One-year contract
+* Two-year contract
+
+### Internet Service Analysis
+
+* DSL
+* Fiber Optic
+* No Internet Service
+
+### Payment Method Analysis
+
+* Electronic Check
+* Bank Transfer
+* Credit Card
+* Mailed Check
+
+### Tech Support Analysis
+
+* Impact of support services on churn behavior
+
+### Correlation Analysis
+
+Examined relationships among:
+
+* Tenure Months
+* Monthly Charges
+* Total Charges
+* Churn Value
+* CLTV
+
+### Churn Rate Comparison
+
+Cross-tabulation between:
+
+* Contract Type
+* Customer Churn
+
+---
+
+# 🧹 Data Preprocessing
+
+## Data Cleaning
+
+### Total Charges Conversion
+
+```python
+df['Total Charges'] = pd.to_numeric(
+    df['Total Charges'],
+    errors='coerce'
+)
+```
+
+### Missing Value Treatment
+
+Missing values were primarily associated with customers having zero tenure.
+
+```python
+df['Total Charges'].fillna(0, inplace=True)
+```
+
+### Irrelevant Columns Removed
+
+```python
+drop_columns = [
+    'CustomerID',
+    'Count',
+    'Country',
+    'State',
+    'Zip Code',
+    'Lat Long',
+    'Latitude',
+    'Longitude',
+    'City',
+    'Churn Label',
+    'Churn Score',
+    'CLTV',
+    'Churn Reason'
+]
+```
+
+---
+
+# 🔢 Feature Engineering
+
+### One-Hot Encoding
+
+Categorical variables were transformed into numerical representations using:
+
+```python
+pd.get_dummies(
+    df,
+    drop_first=True
+)
+```
+
+Benefits:
+
+* Converts categorical data into machine-readable format.
+* Prevents multicollinearity.
+* Improves model performance.
+
+---
+
+# 🎯 Feature Selection
+
+### Feature Matrix
+
+```python
+X = df.drop('Churn Value', axis=1)
+y = df['Churn Value']
+```
+
+### Low Importance Features Removed
+
+```python
+dropping = [
+    'Phone Service_Yes',
+    'Multiple Lines_No phone service',
+    'Streaming TV_Yes',
+    'Streaming Movies_Yes',
+    'Device Protection_No internet service'
+]
+```
+
+Created optimized feature set:
+
+```python
+X_selected
+```
+
+---
+
+# ✂️ Train-Test Split
+
+```python
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42
+)
+```
+
+### Split Ratio
+
+* Training Data: 80%
+* Testing Data: 20%
+
+---
+
+# 🌲 Machine Learning Model
+
+## Random Forest Classifier
+
+### Baseline Model
+
+```python
+rf_model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+```
+
+### Evaluation Metrics
+
+* Accuracy Score
+* Precision
+* Recall
+* F1 Score
+* Confusion Matrix
+* Classification Report
+
+---
+
+## Handling Class Imbalance
+
+```python
+rf_balanced = RandomForestClassifier(
+    n_estimators=100,
+    class_weight='balanced',
+    random_state=42
+)
+```
+
+### Objective
+
+Improve recall and detect churned customers more effectively.
+
+---
+
+## Hyperparameter Tuning
+
+Optimized parameters through manual grid search.
+
+```python
+rf_tuned = RandomForestClassifier(
+    n_estimators=300,
+    max_depth=10,
+    class_weight='balanced',
+    random_state=42
+)
+```
+
+### Parameter Search Space
+
+```python
+n_estimators = [100, 200, 300, 400, 500]
+
+max_depth = [5, 10, 15, 20, 25]
+```
+
+### Optimization Priority
+
+1. Recall Score
+2. Accuracy Score
+
+---
+
+# 📈 Feature Importance Analysis
+
+Feature importance scores were extracted from the trained Random Forest model.
+
+```python
+feature_importance = pd.DataFrame({
+    'Feature': X.columns,
+    'Importance': rf_tuned.feature_importances_
+})
+```
+
+### Benefits
+
+* Identified key churn drivers.
+* Removed low-impact variables.
+* Improved model interpretability.
+
+---
+
+# 🔁 Cross Validation
+
+Applied 5-Fold Cross Validation to ensure model stability and generalization.
+
+```python
+cross_val_score(
+    final_rf,
+    X,
+    y,
+    cv=5,
+    scoring='accuracy'
+)
+```
+
+Additional metric:
+
+```python
+cross_val_score(
+    final_rf,
+    X,
+    y,
+    cv=5,
+    scoring='recall'
+)
+```
+
+---
+
+# 📉 ROC-AUC Evaluation
+
+Model performance was further evaluated using ROC-AUC.
+
+```python
+y_prob = rf_tuned.predict_proba(X_test)
+```
+
+Generated:
+
+* ROC Curve
+* AUC Score
+
+### Interpretation
+
+Higher AUC indicates stronger ability to distinguish churned and retained customers.
+
+---
+
+# 🗂️ Customer Segmentation using K-Means
+
+Customer segmentation was performed using:
+
+```python
+Tenure Months
+Monthly Charges
+Total Charges
+Churn Probability
+```
+
+### Data Scaling
+
+```python
+StandardScaler()
+```
+
+### Optimal Clusters
+
+Determined using the Elbow Method.
+
+```python
+K = 3
+```
+
+### Customer Segments
+
+| Cluster | Segment                 |
+| ------- | ----------------------- |
+| 0       | Budget Loyal Customers  |
+| 1       | High-Risk Customers     |
+| 2       | Loyal Premium Customers |
+
+---
+
+# 📊 Visualizations Generated
+
+* Churn Distribution
+* Tenure Distribution
+* Tenure vs Churn
+* Monthly Charges Distribution
+* Monthly Charges vs Churn
+* Contract Type Analysis
+* Internet Service Analysis
+* Payment Method Analysis
+* Tech Support Analysis
+* Correlation Heatmap
+* ROC Curve
+* Elbow Curve
+* Customer Cluster Scatterplots
+
+---
+
+# 🚀 Project Workflow
+
+```text
+Data Collection
+        ↓
+Data Cleaning
+        ↓
+Exploratory Data Analysis
+        ↓
+Feature Engineering
+        ↓
+Feature Selection
+        ↓
+Train-Test Split
+        ↓
+Random Forest Model
+        ↓
+Hyperparameter Tuning
+        ↓
+Cross Validation
+        ↓
+ROC-AUC Evaluation
+        ↓
+Customer Segmentation
+        ↓
+Business Insights
+```
+
+---
+
+# 📌 Key Insights
+
+✅ Customers with shorter tenure are significantly more likely to churn.
+
+✅ Month-to-month contracts show the highest churn rates.
+
+✅ Customers with higher monthly charges have increased churn probability.
+
+✅ Tech support availability reduces churn likelihood.
+
+✅ Class balancing improved churn detection performance.
+
+✅ Random Forest with 300 trees and depth 10 delivered the best overall performance.
+
+✅ K-Means clustering identified actionable customer groups for retention campaigns.
+
+---
+
+# 📂 Project Structure
+
+```text
+Telco-Customer-Churn-Prediction
+│
+├── Telco_customer_churn.xlsx
+├── CBSOTPROJ1.ipynb
+├── README.md
+├── requirements.txt
+└── images/
+```
+
+---
+
+# 🔮 Future Enhancements
+
+* Deploy model using Streamlit
+* Develop an interactive dashboard
+* Integrate XGBoost and LightGBM
+* Add SHAP Explainability
+* Real-Time Churn Prediction API
+* Automated Model Retraining Pipeline
+
+---
